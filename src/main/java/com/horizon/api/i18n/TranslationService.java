@@ -28,54 +28,61 @@ public class TranslationService {
         this.redisTemplate = redisTemplate;
     }
 
-    // Traduccion de un solo DTO
+    // Traducción de un solo DTO
     public <T extends TranslatableDTO> T translate(T dto, String targetLanguage) {
         if (dto == null || targetLanguage == null || targetLanguage.equalsIgnoreCase("en")) {
             return dto;
         }
 
-        try {
-            // Clave semántica para cache
-            String cacheKey = buildCacheKey(dto, targetLanguage);
+        String cacheKey = buildCacheKey(dto, targetLanguage);
+        String cached = null;
 
-            // Verificacion en redis para saber si ya existe la traducción
-            String cached = redisTemplate.opsForValue().get(cacheKey);
+        try {
+            // Se intenta leer Redis, si falla, se continua sin cache
+            cached = redisTemplate.opsForValue().get(cacheKey);
+        } catch (Exception ex) {
+            System.err.println("[WARN] Redis unavailable, skipping cache read: " + ex.getMessage());
+        }
+
+        try {
             if (cached != null) {
                 return objectMapper.readValue(cached, (Class<T>) dto.getClass());
             }
 
-            // Convertir DTO a JSON completo
+            // Conversion de un DTO a JSON 
             String jsonInput = objectMapper.writeValueAsString(dto);
 
-            // Crear el prompt con el template Horizon
+            // Creacion del prompt
             Prompt prompt = PromptLibrary.TRANSLATION_PROMPT_TEMPLATE.create(Map.of(
                     "targetLang", targetLanguage,
                     "json", jsonInput
             ));
 
             // Llamada al modelo
-            String jsonOutput = chatClient
-                    .prompt(prompt)
-                    .call()
-                    .content()
-                    .trim();
+            String jsonOutput = chatClient.prompt(prompt).call().content().trim();
 
-            // Convencion de la respuesta en DTO traducido
+            // Conversion de la respuesta al DTO traducido
             T translated = objectMapper.readValue(jsonOutput, (Class<T>) dto.getClass());
 
-            // Guardado temporal en Redis (TTL de 12 horas)
-            redisTemplate.opsForValue().set(cacheKey, jsonOutput, Duration.ofHours(12));
+            // Se intenta escribir en Redis, si falla, se continua sin cache
+            try {
+                redisTemplate.opsForValue().set(cacheKey, jsonOutput, Duration.ofHours(12));
+            } catch (Exception ex) {
+                System.err.println("[WARN] Redis unavailable, skipping cache write: " + ex.getMessage());
+            }
 
             return translated;
 
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Error translating DTO: " + e.getMessage(), e);
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error translating DTO (OpenAI): " + e.getMessage(),
+                    e
+            );
         }
     }
 
-
-    // Traduccion de una lista de DTOs.
+    // Traducción de lista
     public <T extends TranslatableDTO> List<T> translateList(List<T> list, String targetLanguage) {
         if (targetLanguage == null || targetLanguage.equalsIgnoreCase("en")) {
             return list;
@@ -100,7 +107,6 @@ public class TranslationService {
         return String.format("translation:%s:%s:%s", type, identifier, lang);
     }
 
-    // Intenta obtener el valor de un campo específico del DTO
     private String getFieldValue(TranslatableDTO dto, String fieldName) {
         try {
             Field field = dto.getClass().getDeclaredField(fieldName);
@@ -112,3 +118,4 @@ public class TranslationService {
         }
     }
 }
+
