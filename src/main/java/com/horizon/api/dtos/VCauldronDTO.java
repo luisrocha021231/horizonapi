@@ -52,8 +52,8 @@ public class VCauldronDTO implements TranslatableDTO {
         this.slug = entity.getSlug();
         this.name = entity.getName();
         this.description = entity.getDescription();
-        this.path_image = "/images/cauldrons/"+entity.getPathImage();
-        this.map_location_image = "/images/map-location/"+entity.getMapLocationImage();
+        this.path_image = entity.getPathImage();
+        this.map_location_image = entity.getMapLocationImage();
         this.region = entity.getRegion();
         try {
             ObjectMapper mapper = new ObjectMapper();

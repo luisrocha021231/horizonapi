@@ -63,7 +63,7 @@ public class VCharactersDTO implements TranslatableDTO {
         this.id = entity.getId();
         this.slug = entity.getSlug();
         this.name = entity.getName();
-        this.image_path = "/images/characters/"+entity.getImagePath();
+        this.image_path = entity.getImagePath();
         this.culture = entity.getCulture();
         this.gender = entity.getGender();
         this.profession = entity.getProfession();

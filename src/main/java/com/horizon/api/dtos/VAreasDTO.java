@@ -51,7 +51,7 @@ public class VAreasDTO implements TranslatableDTO {
         this.id = entity.getId();
         this.slug = entity.getSlug();
         this.name = entity.getName();
-        this.image_path = "/images/areas/"+entity.getImagePath();
+        this.image_path = entity.getImagePath();
         this.description = entity.getDescription();
         this.type = entity.getType();
         this.faction = entity.getFaction();

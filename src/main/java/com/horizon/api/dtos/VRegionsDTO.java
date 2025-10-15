@@ -34,7 +34,7 @@ public class VRegionsDTO implements TranslatableDTO {
         this.slug = entity.getSlug();
         this.name = entity.getName();
         this.description = entity.getDescription();
-        this.image_path = "/images/regions/" + entity.getImagePath();
+        this.image_path = entity.getImagePath();
         this.area = entity.getArea();
         
         try {
