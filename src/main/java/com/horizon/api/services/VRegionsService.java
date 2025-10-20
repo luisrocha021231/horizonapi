@@ -23,11 +23,17 @@ public class VRegionsService {
     @Autowired
     public TranslationService translationService;
 
+    @Autowired
+    private CdnUrlService cdnUrlService;
+
+    String path = "regions/";
+
     public VRegionsDTO getVRegions(Long id, String lang) {
         VRegionsEntity region = vRegionsRepository.findById(id)
                         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Region not found with id: " + id));
 
         VRegionsDTO regiondto = new VRegionsDTO(region);
+        regiondto.setImage_path(cdnUrlService.buildImageUrl(path + region.getImagePath()));
         return translationService.translate(regiondto, lang);
 
     }
@@ -41,6 +47,7 @@ public class VRegionsService {
                                                         .toList();
 
             List<VRegionsDTO> translatedRegions = translationService.translateList(regions, lang);
+            translatedRegions.forEach(dto -> dto.setImage_path(cdnUrlService.buildImageUrl(path + dto.getImage_path())));
             response.put("regions", translatedRegions);
         } else {
             List<VRegionsDTO> regions = vRegionsRepository.findAll()
@@ -49,6 +56,7 @@ public class VRegionsService {
                                                         .toList();
 
             List<VRegionsDTO> translatedRegions = translationService.translateList(regions, lang);
+            translatedRegions.forEach(dto -> dto.setImage_path(cdnUrlService.buildImageUrl(path + dto.getImage_path())));
             response.put("regions", translatedRegions);
         }
         return response;

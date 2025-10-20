@@ -26,10 +26,16 @@ public class VMachinesService {
     @Autowired
     private TranslationService translationService;
 
+    @Autowired
+    private CdnUrlService cdnUrlService;
+
+    String path = "machines/";
+
     public VMachinesDTO getMachineById(Long id, String lang) {
         VMachinesEntity entity = vMachinesRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Machine not found with id: " + id));
         VMachinesDTO dto = new VMachinesDTO(entity);
+        dto.setPath_image(cdnUrlService.buildImageUrl(path + entity.getPathImage()));
         return translationService.translate(dto, lang);
     }
 
@@ -52,6 +58,7 @@ public class VMachinesService {
             Page<VMachinesEntity> searchPage = vMachinesRepository.findByNameContainingIgnoreCase(search, pageable);
             Page<VMachinesDTO> dtoPage = searchPage.map(VMachinesDTO::new);
 
+            dtoPage.getContent().forEach(dto -> dto.setPath_image(cdnUrlService.buildImageUrl(path + dto.getPath_image())));
             List<VMachinesDTO> translatedMachines = translationService.translateList(dtoPage.getContent(), lang);
 
             Map<String, Object> pagination = new HashMap<>();
@@ -75,7 +82,7 @@ public class VMachinesService {
                                                                 .toList();
 
             List<VMachinesDTO> translatedMachines = translationService.translateList(allMachines, lang);
-
+            translatedMachines.forEach(dto -> dto.setPath_image(cdnUrlService.buildImageUrl(path + dto.getPath_image())));
             response.put("machines", translatedMachines);
             return response;
         }
@@ -95,6 +102,7 @@ public class VMachinesService {
         Page<VMachinesEntity> machinesPage = vMachinesRepository.findAll(pageable);
         Page<VMachinesDTO> dtoPage = machinesPage.map(VMachinesDTO::new);
 
+        dtoPage.getContent().forEach(dto -> dto.setPath_image(cdnUrlService.buildImageUrl(path + dto.getPath_image())));
         List<VMachinesDTO> translatedMachines = translationService.translateList(dtoPage.getContent(), lang);
 
         Map<String, Object> pagination = new HashMap<>();

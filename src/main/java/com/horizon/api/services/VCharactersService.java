@@ -24,12 +24,18 @@ public class VCharactersService {
     @Autowired
     private TranslationService translationService;
 
+    @Autowired
+    private CdnUrlService cdnUrlService;
+
+    String path = "characters/";
+
     // OBTENER UN PERSONAJE POR ID
     public VCharactersDTO getCharacterById(Long id, String lang) {
         VCharactersEntity character = vCharactersRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Character not found with id: " + id));
         
         VCharactersDTO dto = new VCharactersDTO(character);
+        dto.setImage_path(cdnUrlService.buildImageUrl(path + character.getImagePath()));
         return translationService.translate(dto, lang);
     }
 
@@ -53,6 +59,7 @@ public class VCharactersService {
         Pageable pageable = PageRequest.of(currentPage, pageSize);
         Page<VCharactersEntity> searchPage = vCharactersRepository.findByNameContainingIgnoreCase(search, pageable);
         Page<VCharactersDTO> dtoPage = searchPage.map(VCharactersDTO::new);
+        dtoPage.getContent().forEach(dto -> dto.setImage_path(cdnUrlService.buildImageUrl(path + dto.getImage_path())));
 
         List<VCharactersDTO> translatedCharacters = translationService.translateList(dtoPage.getContent(), lang);
 
@@ -78,6 +85,7 @@ public class VCharactersService {
                                                                   .toList();
 
         List<VCharactersDTO> translatedCharacters = translationService.translateList(allCharacters, lang);
+        translatedCharacters.forEach(dto -> dto.setImage_path(cdnUrlService.buildImageUrl(path + dto.getImage_path())));
         response.put("characters", translatedCharacters);
         return response;
     }
@@ -97,6 +105,7 @@ public class VCharactersService {
     Pageable pageable = PageRequest.of(currentPage, pageSize);
     Page<VCharactersEntity> charactersPage = vCharactersRepository.findAll(pageable);
     Page<VCharactersDTO> dtoPage = charactersPage.map(VCharactersDTO::new);
+    dtoPage.getContent().forEach(dto -> dto.setImage_path(cdnUrlService.buildImageUrl(path + dto.getImage_path())));
 
     List<VCharactersDTO> translatedCharacters = translationService.translateList(dtoPage.getContent(), lang);
 

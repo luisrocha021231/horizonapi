@@ -22,12 +22,18 @@ public class VAreasService {
     @Autowired
     private TranslationService translationService;
 
+    @Autowired
+    private CdnUrlService cdnUrlService;
+
+    String path = "area/";
+
     // OBTENER UN AREA POR ID
     public VAreasDTO getAreaById(Long id, String lang) {
         VAreasDTO area = vAreasRepository.findById(id)
                 .map(VAreasDTO::new)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Area not found with id: " + id));
 
+            area.setImage_path(cdnUrlService.buildImageUrl(path + area.getImage_path()));
         return translationService.translate(area, lang);
     }
 
@@ -47,6 +53,7 @@ public class VAreasService {
                     .map(VAreasDTO::new)
                     .toList();
         }
+        areas.forEach(dto -> dto.setImage_path(cdnUrlService.buildImageUrl(path + dto.getImage_path())));
         response.put("areas", translationService.translateList(areas, lang));
         return response;
     }

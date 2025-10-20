@@ -23,10 +23,16 @@ public class VCauldronsService {
     @Autowired
     private TranslationService translationService;
 
+    @Autowired
+    private CdnUrlService cdnUrlService;
+
+    String path = "cauldrons/";
+
     public VCauldronDTO getCauldronById(Long id, String lang) {
         VCauldronEntity cauldron = vCauldronsRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Cauldron not found with id: " + id));
         VCauldronDTO dto = new VCauldronDTO(cauldron);
+        dto.setPath_image(cdnUrlService.buildImageUrl(path + cauldron.getPathImage()));
         return translationService.translate(dto, lang);
     }
 
@@ -40,13 +46,15 @@ public class VCauldronsService {
                                                          .toList();
 
             List<VCauldronDTO> translatedCauldrons = translationService.translateList(cauldrons, lang);
+            translatedCauldrons.forEach(dto -> dto.setPath_image(cdnUrlService.buildImageUrl(path + dto.getPath_image())));
             response.put("cauldrons", translatedCauldrons);
         } else {
             List<VCauldronDTO> cauldrons = vCauldronsRepository.findAll()
                                                          .stream()
                                                          .map(VCauldronDTO::new)
                                                          .toList();
-            List<VCauldronDTO> translatedCauldrons = translationService.translateList(cauldrons, lang);                                             
+            List<VCauldronDTO> translatedCauldrons = translationService.translateList(cauldrons, lang); 
+            translatedCauldrons.forEach(dto -> dto.setPath_image(cdnUrlService.buildImageUrl(path + dto.getPath_image())));                                            
             response.put("cauldrons", translatedCauldrons);
         }
         return response;
