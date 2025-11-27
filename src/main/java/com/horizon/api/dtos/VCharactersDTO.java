@@ -45,10 +45,10 @@ public class VCharactersDTO implements TranslatableDTO {
     private String status;
 
     @Schema(description = "Eye color of the character.")
-    private String eyesColor;
+    private String eyes_color;
 
     @Schema(description = "Hair color of the character.")
-    private String hairColor;
+    private String hair_color;
 
     @Schema(description = "Birth date of the character.")
     private String birth_date;
@@ -68,8 +68,8 @@ public class VCharactersDTO implements TranslatableDTO {
         this.gender = entity.getGender();
         this.profession = entity.getProfession();
         this.status = entity.getStatus();
-        this.eyesColor = entity.getEyesColor();
-        this.hairColor = entity.getHairColor();
+        this.eyes_color = entity.getEyesColor();
+        this.hair_color = entity.getHairColor();
         this.birth_date = entity.getBirthDate();
         this.death_date = entity.getDeathDate();
         

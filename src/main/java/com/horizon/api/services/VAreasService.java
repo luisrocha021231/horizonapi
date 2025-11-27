@@ -9,7 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.horizon.api.dtos.AreaGraphQLDTO;
 import com.horizon.api.dtos.VAreasDTO;
+import com.horizon.api.entitites.VAreasEntity;
 import com.horizon.api.i18n.TranslationService;
 import com.horizon.api.repositories.VAreasRepository;
 
@@ -56,5 +58,33 @@ public class VAreasService {
         areas.forEach(dto -> dto.setImage_path(cdnUrlService.buildImageUrl(path + dto.getImage_path())));
         response.put("areas", translationService.translateList(areas, lang));
         return response;
+    }
+
+    public AreaGraphQLDTO getAreasGraphQL(
+        String search,
+        String lang
+    ) {
+        List<VAreasEntity> result;
+
+        if(search != null && !search.trim().isEmpty()) {
+            result = vAreasRepository.findByNameContainingIgnoreCase(search);        
+        }
+        else {
+            result = vAreasRepository.findAll();
+        }
+
+        List<VAreasDTO> areas = result
+            .stream()
+            .map(VAreasDTO::new)
+            .peek(dto ->
+                dto.setImage_path(
+                    cdnUrlService.buildImageUrl(path + dto.getImage_path())
+                )
+            )
+            .toList();
+
+        areas = translationService.translateList(areas, lang);
+
+        return new AreaGraphQLDTO(areas);
     }
 }

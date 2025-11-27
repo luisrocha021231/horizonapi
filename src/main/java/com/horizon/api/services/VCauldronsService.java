@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.horizon.api.dtos.CauldronGraphQLDTO;
 import com.horizon.api.dtos.VCauldronDTO;
 import com.horizon.api.entitites.VCauldronEntity;
 import com.horizon.api.i18n.TranslationService;
@@ -58,6 +59,34 @@ public class VCauldronsService {
             response.put("cauldrons", translatedCauldrons);
         }
         return response;
+    }
+
+    public CauldronGraphQLDTO getCauldronsGraphQL(
+        String search,
+        String lang
+    ) {
+        List<VCauldronEntity> result;
+
+        if(search != null && !search.trim().isEmpty()) {
+            result = vCauldronsRepository.findByNameContainingIgnoreCase(search);
+        }
+        else {
+            result = vCauldronsRepository.findAll();
+        }
+
+        List<VCauldronDTO> cauldrons = result
+            .stream()
+            .map(VCauldronDTO::new)
+            .peek(dto ->
+                dto.setPath_image(
+                    cdnUrlService.buildImageUrl(path + dto.getPath_image())
+                )
+            )
+            .toList();
+
+        cauldrons = translationService.translateList(cauldrons, lang);
+
+        return new CauldronGraphQLDTO(cauldrons);
     }
 
 }

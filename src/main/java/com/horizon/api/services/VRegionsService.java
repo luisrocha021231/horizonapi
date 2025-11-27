@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.horizon.api.dtos.RegionGraphQLDTO;
 import com.horizon.api.dtos.VRegionsDTO;
 import com.horizon.api.entitites.VRegionsEntity;
 import com.horizon.api.i18n.TranslationService;
@@ -60,5 +61,34 @@ public class VRegionsService {
             response.put("regions", translatedRegions);
         }
         return response;
+    }
+
+    public RegionGraphQLDTO getRegionsGraphQL(
+        String search,
+        String lang
+    ) {
+
+        List<VRegionsEntity> result;
+
+        if(search != null && !search.trim().isEmpty()) {
+            result = vRegionsRepository.findByNameContainingIgnoreCase(search);
+        }
+        else {
+            result = vRegionsRepository.findAll();
+        }
+
+        List<VRegionsDTO> regions = result
+            .stream()
+            .map(VRegionsDTO::new)
+            .peek(dto -> 
+                dto.setImage_path(
+                    cdnUrlService.buildImageUrl(path + dto.getImage_path())
+                )
+            )
+            .toList();
+        
+        regions = translationService.translateList(regions, lang);
+
+        return new RegionGraphQLDTO(regions);
     }
 }

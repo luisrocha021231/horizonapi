@@ -1,0 +1,143 @@
+# CHARACTERS
+type Character {
+    id: ID!
+    slug: String!
+    name: String!
+    image_path: String
+    culture: String
+    gender: String
+    profession: String
+    status: String
+    eyes_color: String
+    hair_color: String
+    birth_date: String
+    death_date: String
+    appears_in: [String!]!
+}
+
+type CharacterPage {
+    pagination: Pagination
+    items: [Character!]!
+}
+
+# MACHINES
+type Machine {
+    id: ID!
+    slug: String!
+    name: String!
+    path_image: String
+    size: String
+    origin: String
+    machine_class: String
+    strength: [String!]!
+    weakness: [String!]!
+    explosive_components: [String!]!
+    weak_points: [String!]!
+    appears_in: [String!]!
+}
+
+type MachinePage {
+    pagination: Pagination
+    items: [Machine!]!
+}
+
+# REGIONS
+type Region {
+    id: ID!
+    slug: String!
+    name: String!
+    description: String
+    image_path: String
+    factions: [String!]!
+    area: String
+    appears_in: [String!]!
+}
+
+type Regions {
+    items: [Region!]!
+}
+
+# AREAS
+type Area {
+    id: ID!
+    slug: String!
+    name: String!
+    description: String
+    type: String
+    faction: String
+    image_path: String
+    regions: [String!]!
+    appears_in: [String!]!
+}
+
+type Areas {
+    items: [Area!]!
+}
+
+# CAULDRONS
+type Cauldron {
+    id: ID!
+    slug: String!
+    name: String!
+    description: String
+    path_image: String
+    map_location_image: String
+    region: String
+    overridden_machines: [String!]!
+    appears_in: [String!]!
+}
+
+type Cauldrons {
+    items: [Cauldron!]!
+}
+
+# SHARED TYPES
+type Pagination {
+    pageSize: Int
+    currentPage: Int
+    totalPages: Int
+    nextPage: String
+    previousPage: String
+}
+
+# MAIN QUERY
+type Query {
+    # Characters
+    character(id: ID!, lang: String): Character
+    characters(
+        page: Int
+        size: Int
+        search: String
+        lang: String
+    ): CharacterPage
+
+    # Machines
+    machine(id: ID!, lang: String): Machine
+    machines(
+        page: Int
+        size: Int
+        search: String
+        lang: String
+    ): MachinePage
+
+    # Regions
+    region(id: ID!, lang: String): Region
+    regions(
+        search: String
+        lang: String
+    ): Regions
+
+    # Areas
+    area(id: ID!, lang: String): Area
+    areas(
+        search: String
+        lang: String
+    ): Areas
+
+    # Cauldrons
+    cauldron(id: ID!, lang: String): Cauldron
+    cauldrons(
+        search: String
+        lang: String
+    ): Cauldrons
+}
